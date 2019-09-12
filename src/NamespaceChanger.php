@@ -38,8 +38,6 @@ class NamespaceChanger
     {
         $autoload = static::getComposerAutoload($event);
         $extra = $event->getComposer()->getPackage()->getExtra();
-        $map = $event->getComposer()->getPackage();
-        var_dump($map);
         $classes = $extra['classes-to-override'];
         foreach ($classes as $class => $file) {
             static::cloneClass($class);
