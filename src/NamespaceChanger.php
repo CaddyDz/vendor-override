@@ -36,6 +36,7 @@ class NamespaceChanger
      */
     public static function override(Event $event)
     {
+        static::checkClassMap($event);
         $autoload = static::getComposerAutoload($event);
         $extra = $event->getComposer()->getPackage()->getExtra();
         $classes = $extra['classes-to-override'];
@@ -76,6 +77,15 @@ class NamespaceChanger
             'namespace' => $namespace,
             'exportPath' => $full_path
         ];
+    }
+
+    protected static function checkClassMap(Event $event)
+    {
+        $classmap = 'vendor/composer/autoload_classmap.php';
+        if (!file_exists($classmap)) {
+            $event->getIO()->write('<warning>Classmap has not loaded, run dump-autoload again</warning>', true);
+            die();
+        }
     }
 
     /**
