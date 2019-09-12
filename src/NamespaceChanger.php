@@ -84,7 +84,6 @@ class NamespaceChanger
         $classmap = 'vendor/composer/autoload_classmap.php';
         if (!file_exists($classmap)) {
             $event->getIO()->write('<warning>Classmap has not loaded, run dump-autoload again</warning>', true);
-            die();
         }
     }
 
