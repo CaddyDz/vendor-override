@@ -42,7 +42,7 @@ class NamespaceChanger
         foreach ($classes as $class => $files) {
             foreach ($files as $original => $new) {
                 static::cloneClass($class, $original);
-                $autoload['files'] = $new;
+                $autoload['files'][] = $new;
             }
         }
         $event->getComposer()->getPackage()->setAutoload($autoload);
