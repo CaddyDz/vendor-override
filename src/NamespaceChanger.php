@@ -36,26 +36,33 @@ class NamespaceChanger
      */
     public static function override(Event $event)
     {
-        static::checkClassMap($event);
         $autoload = static::getComposerAutoload($event);
         $extra = $event->getComposer()->getPackage()->getExtra();
         $classes = $extra['classes-to-override'];
-        foreach ($classes as $class => $file) {
-            static::cloneClass($class);
-            $autoload['files'] = $file;
+        foreach ($classes as $class => $files) {
+            foreach ($files as $original => $new) {
+                static::cloneClass($class, $original);
+                $autoload['files'] = $new;
+            }
         }
         $event->getComposer()->getPackage()->setAutoload($autoload);
     }
 
-    protected static function cloneClass($class)
+    protected static function cloneClass($class, $original)
     {
         if (!static::alreadyLoaded($class)) {
-            $content = file_get_contents(static::getClassInfo($class)['importPath']);
-            $namespace = static::getClassInfo($class)['namespace'];
+            $content = file_get_contents('vendor/' . $original);
+            $namespace = static::getClassNamespace($class);
             $content = preg_replace("/$namespace/", __NAMESPACE__, $content, 1);
-            $path = static::getClassInfo($class)['exportPath'];
+            $path = pathinfo(__FILE__)['dirname'] . DIRECTORY_SEPARATOR . pathinfo($original, PATHINFO_BASENAME);
             file_put_contents($path, $content);
         }
+    }
+
+    protected static function getClassNamespace($class)
+    {
+        $namespace = substr($class, 0, strrpos($class, '\\'));
+        return str_replace('\\', '\\\\', $namespace);
     }
 
     protected static function alreadyLoaded($class)
@@ -63,28 +70,6 @@ class NamespaceChanger
         $pos = strrpos($class, '\\');
         $class = substr($class, $pos);
         return class_exists(__NAMESPACE__ . $class);
-    }
-
-    protected static function getClassInfo($class)
-    {
-        $map = require 'vendor/composer/autoload_classmap.php';
-        $relative_path = str_replace(getcwd() . '/', '', $map[$class]);
-        $namespace = str_replace('\\' . pathinfo($relative_path, PATHINFO_FILENAME), '', $class);
-        $namespace = str_replace('\\', '\\\\', $namespace);
-        $full_path = pathinfo(__FILE__)['dirname'] . DIRECTORY_SEPARATOR . pathinfo($relative_path, PATHINFO_BASENAME);
-        return [
-            'importPath' => $relative_path,
-            'namespace' => $namespace,
-            'exportPath' => $full_path
-        ];
-    }
-
-    protected static function checkClassMap(Event $event)
-    {
-        $classmap = 'vendor/composer/autoload_classmap.php';
-        if (!file_exists($classmap)) {
-            $event->getIO()->write('<warning>Classmap has not loaded, run dump-autoload again</warning>', true);
-        }
     }
 
     /**
