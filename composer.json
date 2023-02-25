@@ -2,14 +2,14 @@
     "name": "caddydz/vendor-override",
     "license": "MIT",
     "description": "Extend an existing class by same name and namespace",
+    "require": {
+        "php": "^5.4.0 || ^7.3"
+    },
     "minimum-stability": "dev",
     "autoload": {
         "psr-4": {
             "CaddyDz\\VendorOverride\\": "src/"
         }
-    },
-    "require": {
-        "php": "^5.4.0 || ^7.3"
     },
     "repositories": [
         {
